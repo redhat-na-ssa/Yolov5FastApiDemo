@@ -63,6 +63,9 @@ YOLOv5 🚀 is a family of object detection architectures and models pretrained 
 
 See the [YOLOv5 Docs](https://docs.ultralytics.com) for full documentation on training, testing and deployment.
 
+## <div align="center">To Run Fast API server </div>
+uvicorn serve:app --reload --host localhost --port 9000
+
 ## <div align="center">Quick Start Examples</div>
 
 <details open>
