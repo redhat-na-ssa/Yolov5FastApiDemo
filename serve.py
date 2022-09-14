@@ -74,12 +74,21 @@ class InferredResult:
     def __init__(self) -> None:
         self.resultList = []
 
+@dataclass
+class InferredUsingModel:
+     name : str = Field(None,title="Model Name")
+     modelType : str = Field(None,title="Model Type")
+     def __init__(self,name,modelType):
+       self.name = name
+       self.modelType = modelType
+        
 class InferredResponse(BaseModel):
     filename : str = Field(None,title="Input file")
     contentType : str = Field(None,title="Http content type used for detecting the type of file eg: Image/Video")
     detectedObj : Optional[List[InferredObject]] = Field(None,title="List of inferred objects from the file")
     save_path : str = Field(None,title="Path saved on the model server after detection")
     data : bytes = Field(None,title="Detected File sent back as bytes")
+    modelInfo :  InferredUsingModel = Field(None,title="Model used to perform the object detection")
     
 # initialize
 
@@ -288,12 +297,12 @@ def infer(source):
 async def root():
     return { "message" : "Fast Api Services are up and running"}
 
-@app.get("/model")
+""" @app.get("/model")
 async def get_model_info():
     return { 
             "model" : weights.name,
             "type" : model._get_name()
-        }    
+        }     """
 
 @app.post("/infer",response_model=InferredResponse)
 async def infer_image_video_files(file : UploadFile):  #,response_model=InferedResponse
@@ -315,7 +324,10 @@ async def infer_image_video_files(file : UploadFile):  #,response_model=InferedR
         json_compaitable_data = jsonable_encoder(data,custom_encoder={
             bytes: lambda v: base64.b64encode(v)
         })
+        usedModel = InferredUsingModel(weights.name,model._get_name())
+
         finalResponse = InferredResponse(filename=file.filename,contentType=file.content_type,detectedObj=[],save_path=save_path,data=json_compaitable_data)
         finalResponse.detectedObj = results.resultList
+        finalResponse.modelInfo = usedModel
         return finalResponse
     
